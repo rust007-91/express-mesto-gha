@@ -73,17 +73,17 @@ const likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true }
   )
-    .then((like) => {
-      if (!like) {
+    .then((card) => {
+      if (!card) {
         res
           .status(error.NOT_FOUND)
-          .send({ message: "Карточка с указанным _id не найдена." });
+          .send({ message: "Передан несуществующий _id карточки." });
       } else {
-        res.send(like);
+        res.send({ card });
       }
     })
     .catch((err) => {
-      if (err.name === "ValidationError") {
+      if (err.name === "CastError") {
         res
           .status(error.BAD_REQUEST)
           .send({ message: "Переданы некорректные данные", name: err.name });
@@ -112,7 +112,7 @@ const dislikeCard = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.name === "ValidationError") {
+      if (err.name === "CastError") {
         res
           .status(error.BAD_REQUEST)
           .send({ message: "Переданы некорректные данные", name: err.name });

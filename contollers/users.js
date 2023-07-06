@@ -98,15 +98,11 @@ const updateUser = (req, res) => {
 const updateAvatar = (req, res) => {
   const { avatar } = req.body;
   const id = req.user._id;
-  User.findByIdAndUpdate(
-    id,
-    { avatar },
-    {
-      new: true, // обработчик then получит на вход обновлённую запись
-      runValidators: true, // данные будут валидированы перед изменением
-      upsert: true, // если пользователь не найден, он будет создан
-    }
-  )
+  User.findByIdAndUpdate(id, avatar, {
+    new: true, // обработчик then получит на вход обновлённую запись
+    runValidators: true, // данные будут валидированы перед изменением
+    upsert: true, // если пользователь не найден, он будет создан
+  })
     .then((avatar) => {
       if (!avatar) {
         res.status(error.NOT_FOUND).send({ message: "Пользователь не найден" });
