@@ -96,7 +96,8 @@ const updateUser = (req, res) => {
 };
 
 const updateAvatar = (req, res) => {
-  const { avatar } = req.body;
+  const { avatar } =
+    req.body; /* eslint no-shadow: ["error", { "allow": ["state"] }]*/
   const id = req.user._id;
 
   User.findByIdAndUpdate(
