@@ -96,8 +96,7 @@ const updateUser = (req, res) => {
 };
 
 const updateAvatar = (req, res) => {
-  const { avatar } =
-    req.body; /* eslint no-shadow: ["error", { "allow": ["state"] }]*/
+  const { avatar } = req.body;
   const id = req.user._id;
 
   User.findByIdAndUpdate(
@@ -109,8 +108,8 @@ const updateAvatar = (req, res) => {
       upsert: true, // если пользователь не найден, он будет создан
     },
   )
-    .then((avatar) => {
-      if (!avatar) {
+    .then((user) => {
+      if (!user) {
         res.status(error.NOT_FOUND).send({ message: 'Пользователь не найден' });
       } else {
         res.send(avatar);
