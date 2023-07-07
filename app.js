@@ -25,8 +25,8 @@ app.use("/users", userRouter);
 
 app.use("/cards", cardRouter);
 
-app.use("/", (req, res) => {
-  res.status(error.NOT_FOUND).send("Страница не существует");
+app.use((req, res) => {
+  res.status(error.NOT_FOUND).send({ message: "Страница не существует" });
 });
 
 app.listen(PORT, () => {
