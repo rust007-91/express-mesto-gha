@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const userRouter = require("./routes/users");
 const cardRouter = require("./routes/cards");
+const error = require("./utils/constants");
+const Console = require("console");
 
 const app = express();
 mongoose.connect("mongodb://localhost:27017/mestodb");
@@ -23,4 +25,10 @@ app.use("/users", userRouter);
 
 app.use("/cards", cardRouter);
 
-app.listen(PORT, () => {});
+app.use("/", (req, res) => {
+  res.status(error.NOT_FOUND).send("Страница не существует");
+});
+
+app.listen(PORT, () => {
+  console.log("Сервер запущен");
+});
