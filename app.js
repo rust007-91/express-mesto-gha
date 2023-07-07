@@ -7,6 +7,7 @@ const cardRouter = require("./routes/cards");
 const error = require("./utils/constants");
 
 const app = express();
+
 mongoose.connect("mongodb://localhost:27017/mestodb");
 
 app.use((req, res, next) => {
