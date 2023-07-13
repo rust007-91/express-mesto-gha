@@ -7,10 +7,9 @@ const createCard = (req, res) => {
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => {
-      if (card) {
-        res.status(statusCode.CREATED).send({ message: 'сервер успешно обработал запрос и создал новый ресурс' });
-        res.send(card);
-      }
+      res
+        .status(statusCode.CREATED)
+        .send(card);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {

@@ -7,11 +7,9 @@ const createUsers = (req, res) => {
 
   User.create({ name, about, avatar })
     .then((user) => {
-      if (user) {
-        res.status(statusCode.CREATED).send({ message: 'сервер успешно обработал запрос и создал новый ресурс' });
-        res.send(user);
-      }
-
+      res
+        .status(statusCode.CREATED)
+        .send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {

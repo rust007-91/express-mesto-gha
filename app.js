@@ -1,10 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const helmet = require('helmet'); // защита от вэб уязвимостей
 const bodyParser = require('body-parser');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
 const error = require('./utils/constants');
-const helmet = require('helmet'); // защита от вэб уязвимостей
+
 
 const { PORT = 3000, DB_URL = 'mongodb://localhost:27017/mestodb' } = process.env;
 
