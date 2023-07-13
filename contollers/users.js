@@ -1,5 +1,5 @@
 const User = require('../models/user');
-const error = require('../utils/constants');
+const statusCode = require('../utils/constants');
 
 // контроллер на запрос создания пользователя
 const createUsers = (req, res) => {
@@ -7,16 +7,20 @@ const createUsers = (req, res) => {
 
   User.create({ name, about, avatar })
     .then((user) => {
-      res.send(user);
+      if (user) {
+        res.status(statusCode.CREATED).send({ message: 'сервер успешно обработал запрос и создал новый ресурс' });
+        res.send(user);
+      }
+
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res
-          .status(error.BAD_REQUEST)
+          .status(statusCode.BAD_REQUEST)
           .send({ message: 'Переданы некорректные данные', name: err.name });
       } else {
         res
-          .status(error.INTERNAL_SERVER_ERROR)
+          .status(statusCode.INTERNAL_SERVER_ERROR)
           .send({ message: 'Внутренняя ошибка сервера' });
       }
     });
@@ -27,14 +31,14 @@ const getUsers = (req, res) => {
   User.find({})
     .then((users) => {
       if (!users) {
-        res.status(error.NOT_FOUND).send({ message: 'Пользователь не найден' });
+        res.status(statusCode.NOT_FOUND).send({ message: 'Пользователь не найден' });
       } else {
         res.send(users);
       }
     })
     .catch(() => {
       res
-        .status(error.INTERNAL_SERVER_ERROR)
+        .status(statusCode.INTERNAL_SERVER_ERROR)
         .send({ message: 'Внутренняя ошибка сервера' });
     });
 };
@@ -45,7 +49,7 @@ const getUserId = (req, res) => {
   User.findById(userId)
     .then((user) => {
       if (!user) {
-        res.status(error.NOT_FOUND).send({ message: 'Пользователь не найден' });
+        res.status(statusCode.NOT_FOUND).send({ message: 'Пользователь не найден' });
       } else {
         res.send(user);
       }
@@ -53,11 +57,11 @@ const getUserId = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         res
-          .status(error.BAD_REQUEST)
+          .status(statusCode.BAD_REQUEST)
           .send({ message: 'Неверный запрос', name: err.name });
       } else {
         res
-          .status(error.INTERNAL_SERVER_ERROR)
+          .status(statusCode.INTERNAL_SERVER_ERROR)
           .send({ message: 'Внутренняя ошибка сервера' });
       }
     });
@@ -77,7 +81,7 @@ const updateUser = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        res.status(error.NOT_FOUND).send({ message: 'Пользователь не найден' });
+        res.status(statusCode.NOT_FOUND).send({ message: 'Пользователь не найден' });
       } else {
         res.send(user);
       }
@@ -85,11 +89,11 @@ const updateUser = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res
-          .status(error.BAD_REQUEST)
+          .status(statusCode.BAD_REQUEST)
           .send({ message: 'Переданы некорректные данные', name: err.name });
       } else {
         res
-          .status(error.INTERNAL_SERVER_ERROR)
+          .status(statusCode.INTERNAL_SERVER_ERROR)
           .send({ message: 'Внутренняя ошибка сервера' });
       }
     });
@@ -105,12 +109,11 @@ const updateAvatar = (req, res) => {
     {
       new: true, // обработчик then получит на вход обновлённую запись
       runValidators: true, // данные будут валидированы перед изменением
-      upsert: true, // если пользователь не найден, он будет создан
     },
   )
     .then((user) => {
       if (!user) {
-        res.status(error.NOT_FOUND).send({ message: 'Пользователь не найден' });
+        res.status(statusCode.NOT_FOUND).send({ message: 'Пользователь не найден' });
       } else {
         res.send(user);
       }
@@ -118,11 +121,11 @@ const updateAvatar = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res
-          .status(error.BAD_REQUEST)
+          .status(statusCode.BAD_REQUEST)
           .send({ message: 'Переданы некорректные данные', name: err.name });
       } else {
         res
-          .status(error.INTERNAL_SERVER_ERROR)
+          .status(statusCode.INTERNAL_SERVER_ERROR)
           .send({ message: 'Внутренняя ошибка сервера' });
       }
     });
