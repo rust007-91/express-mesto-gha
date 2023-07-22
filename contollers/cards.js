@@ -1,8 +1,9 @@
 const Card = require('../models/card');
 const statusCode = require('../utils/constants');
+const NotFoundError = require('../errors/NotFoundError');
 
 // контроллер на запрос создания карточки
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
@@ -11,64 +12,32 @@ const createCard = (req, res) => {
         .status(statusCode.CREATED)
         .send(card);
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res
-          .status(statusCode.BAD_REQUEST)
-          .send({ message: 'Переданы некорректные данные', name: err.name });
-      } else {
-        res
-          .status(statusCode.INTERNAL_SERVER_ERROR)
-          .send({ message: 'Внутренняя ошибка сервера' });
-      }
-    });
+    .catch(next);
 };
 
 // контроллер на возвращение всех карточек
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => {
-      if (!cards) {
-        res
-          .status(statusCode.NOT_FOUND)
-          .send({ message: 'Карточка с указанным _id не найдена.' });
-      } else {
-        res.send(cards);
-      }
+      res.send(cards);
     })
-    .catch(() => {
-      res
-        .status(statusCode.INTERNAL_SERVER_ERROR)
-        .send({ message: 'Внутренняя ошибка сервера' });
-    });
+    .catch(next);
 };
 
-const deleteCard = (req, res) => {
+const deleteCard = (req, res, next) => {
   const { cardId } = req.params;
   Card.findByIdAndRemove(cardId)
     .then((card) => {
       if (!card) {
-        res
-          .status(statusCode.NOT_FOUND)
-          .send({ message: 'Карточка с указанным _id не найдена.' });
+        throw new NotFoundError({ message: 'Карточка с указанным _id не найдена.' }); // формируем ошибку  мидлвару
       } else {
         res.send(card);
       }
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res
-          .status(statusCode.BAD_REQUEST)
-          .send({ message: 'Неверный запрос', name: err.name });
-      } else {
-        res
-          .status(statusCode.INTERNAL_SERVER_ERROR)
-          .send({ message: 'Внутренняя ошибка сервера' });
-      }
-    });
+    .catch(next);
 };
 
-const likeCard = (req, res) => {
+const likeCard = (req, res, next) => {
   const { cardId } = req.params;
   Card.findByIdAndUpdate(
     cardId,
@@ -77,27 +46,15 @@ const likeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res
-          .status(statusCode.NOT_FOUND)
-          .send({ message: 'Передан несуществующий _id карточки.' });
+        throw new NotFoundError({ message: 'Карточка с указанным _id не найдена.' }); // формируем ошибку  мидлвару
       } else {
         res.send({ card });
       }
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res
-          .status(statusCode.BAD_REQUEST)
-          .send({ message: 'Переданы некорректные данные', name: err.name });
-      } else {
-        res
-          .status(statusCode.INTERNAL_SERVER_ERROR)
-          .send({ message: 'Внутренняя ошибка сервера' });
-      }
-    });
+    .catch(next);
 };
 
-const dislikeCard = (req, res) => {
+const dislikeCard = (req, res, next) => {
   const { cardId } = req.params;
   Card.findByIdAndUpdate(
     cardId,
@@ -106,24 +63,12 @@ const dislikeCard = (req, res) => {
   )
     .then((like) => {
       if (!like) {
-        res
-          .status(statusCode.NOT_FOUND)
-          .send({ message: 'Карточка с указанным _id не найдена.' });
+        throw new NotFoundError({ message: 'Карточка с указанным _id не найдена.' }); // формируем ошибку  мидлвару
       } else {
         res.send(like);
       }
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res
-          .status(statusCode.BAD_REQUEST)
-          .send({ message: 'Переданы некорректные данные', name: err.name });
-      } else {
-        res
-          .status(statusCode.INTERNAL_SERVER_ERROR)
-          .send({ message: 'Внутренняя ошибка сервера' });
-      }
-    });
+    .catch(next);
 };
 
 module.exports = {
