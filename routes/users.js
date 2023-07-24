@@ -13,13 +13,15 @@ const {
 const auth = require('../middlewares/auth');
 
 const {
-  loginValid,
-  userUpdateValid,
-  avatarUpdateValid,
+  authValidate,
+  loginValidate,
+  idValidate,
+  userUpdateValidate,
+  avatarUpdateValidate,
 } = require('../middlewares/validation');
 
-router.post('/signup', createUsers); // роут на регистрацию
-router.post('/signin', loginValid, login); // роут на аутентификацию
+router.post('/signup', createUsers, authValidate); // роут на регистрацию
+router.post('/signin', login, loginValidate); // роут на аутентификацию
 
 router.use(auth); // авторизация для запросов ниже
 
@@ -27,10 +29,10 @@ router.get('/', getUsers); // роут на возвращение всех по
 
 router.get('/me', getUser); // роут на возвращение информацию о текущем пользователе
 
-router.get('/:userId', getUserId); // роут на возвращение конкретного пользователя
+router.get('/:userId', getUserId, idValidate); // роут на возвращение конкретного пользователя
 
-router.patch('/me', userUpdateValid, updateUser); // роут на обновление профиля
+router.patch('/me', updateUser, userUpdateValidate); // роут на обновление профиля
 
-router.patch('/me/avatar', avatarUpdateValid, updateAvatar);
+router.patch('/me/avatar', updateAvatar, avatarUpdateValidate);
 
 module.exports = router;

@@ -1,7 +1,7 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');  // импортируем модуль jsonwebtoken
 const User = require('../models/user');
 const statusCode = require('../utils/constants');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken'); // импортируем модуль jsonwebtoken
 const NotFoundError = require('../errors/NotFoundError');
 const Unauthorized = require('../errors/Unauthorized');
 
@@ -9,9 +9,11 @@ const Unauthorized = require('../errors/Unauthorized');
 const createUsers = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body;
 
-  bcrypt.hash(String(password), 10) // хешируем пароль
+  // хешируем пароль
+  bcrypt.hash(String(password), 10)
     .then(hash => {
-      User.create({ name, about, avatar, email, password: hash }) // записываем хеш пароль в базу
+      // записываем хеш пароль в базу
+      User.create({ name, about, avatar, email, password: hash })
         .then((user) => {
           res
             .status(statusCode.CREATED)
@@ -26,7 +28,13 @@ const createUsers = (req, res, next) => {
 const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => {
-      res.send(users);
+      if (!users) {
+        throw new NotFoundError({ message: 'Пользователь не найден' }); // формируем ошибку мидлвару
+      } else {
+        res
+          .status(statusCode.OK)
+          .send(users);
+      }
     })
     .catch(next);
 };
@@ -39,7 +47,9 @@ const getUserId = (req, res, next) => {
       if (!user) {
         throw new NotFoundError({ message: 'Пользователь не найден' }); // формируем ошибку  мидлвару
       } else {
-        res.send(user);
+        res
+          .status(statusCode.OK)
+          .send(user);
       }
     })
     .catch(next); // пробрасывает в мидлвару обработчика ошибок
@@ -61,7 +71,9 @@ const updateUser = (req, res, next) => {
       if (!user) {
         throw new NotFoundError({ message: 'Пользователь не найден' }); // формируем ошибку  мидлвару
       } else {
-        res.send(user);
+        res
+          .status(statusCode.OK)
+          .send(user);
       }
     })
     .catch(next);
@@ -83,7 +95,9 @@ const updateAvatar = (req, res, next) => {
       if (!user) {
         throw new NotFoundError({ message: 'Пользователь не найден' }); // формируем ошибку  мидлвару
       } else {
-        res.send(user);
+        res
+          .status(statusCode.OK)
+          .send(user);
       }
     })
     .catch(next);
@@ -94,8 +108,9 @@ const login = (req, res, next) => {
   //отправляем почту и пароль
   const { email, password } = req.body;
   //если почта и пароль совпадают, пользователь входит, иначе получает ошибку
+  //select('+password') отменяем правило исключения в модели
   User.findOne({ email })
-    .select('+password') // отменяем правило исключения в модели.
+    .select('+password')  // отменяем правило исключения в модели
     .then((user) => {
       // сравниваем переданный пароль и хеш из базы
       bcrypt.compare(String(password), user.password)
@@ -107,7 +122,7 @@ const login = (req, res, next) => {
             // создать JWT
             const token = jwt.sign(
               { _id: user._id },
-              process.env['JWT_SECRET'],
+              process.env.JWT_SECRET,
               { expiresIn: '7d' }); // токен будет просрочен через 7 дней
             // прикрепить его к куке
             res.cookie('jwt', token, {
@@ -129,7 +144,9 @@ const getUser = (req, res, next) => {
       if (!user) {
         throw new NotFoundError({ message: 'Пользователь не найден' }); // формируем ошибку  мидлвару
       } else {
-        res.send(user);
+        res
+          .status(statusCode.OK)
+          .send(user);
       }
     })
     .catch(next);

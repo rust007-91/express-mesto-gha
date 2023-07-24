@@ -11,7 +11,7 @@ const errorHandler = (err, req, res, next) => {
   let error;
   // console.log(err);
 
-  if (err.name === 'CastError' || err.name === 'ValidationError') {
+  if (err.name === 'CastError' || err.name === 'ValidationError' || err.statusCode === statusCode.BAD_REQUEST) {
     error = new BadRequestError(err);
   } else if (err.statusCode === statusCode.UNAUTHORIZED) {
     error = new Unauthorized(err);
