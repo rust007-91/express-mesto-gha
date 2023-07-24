@@ -3,7 +3,7 @@ const { celebrate, Joi, Segments } = require('celebrate');
 const regexAvatar = /(https?:\/\/)(w{3}\.)?([a-zA-Z0-9\S]{1,})#?/;
 
 const authValidate = celebrate({
-  [Segments.BODY]: Joi.object().keys({
+  body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required().min(4),
     name: Joi.string().min(2).max(30).required(),

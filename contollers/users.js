@@ -27,14 +27,11 @@ const createUsers = (req, res, next) => {
 // контроллер на запрос возвращения пользователей
 const getUsers = (req, res, next) => {
   User.find({})
+    .orFail(new NotFoundError({ message: 'Пользователь не найден' })) // формируем ошибку
     .then((users) => {
-      if (!users) {
-        throw new NotFoundError({ message: 'Пользователь не найден' }); // формируем ошибку мидлвару
-      } else {
-        res
-          .status(statusCode.OK)
-          .send(users);
-      }
+      res
+        .status(statusCode.OK)
+        .send(users);
     })
     .catch(next);
 };
@@ -43,14 +40,11 @@ const getUsers = (req, res, next) => {
 const getUserId = (req, res, next) => {
   const { userId } = req.params;
   User.findById(userId)
+    .orFail(new NotFoundError({ message: 'Пользователь не найден' }))
     .then((user) => {
-      if (!user) {
-        throw new NotFoundError({ message: 'Пользователь не найден' }); // формируем ошибку  мидлвару
-      } else {
-        res
-          .status(statusCode.OK)
-          .send(user);
-      }
+      res
+        .status(statusCode.OK)
+        .send(user);
     })
     .catch(next); // пробрасывает в мидлвару обработчика ошибок
 };
@@ -67,14 +61,11 @@ const updateUser = (req, res, next) => {
       upsert: true, // если пользователь не найден, он будет создан
     },
   )
+    .orFail(new NotFoundError({ message: 'Пользователь не найден' }))
     .then((user) => {
-      if (!user) {
-        throw new NotFoundError({ message: 'Пользователь не найден' }); // формируем ошибку  мидлвару
-      } else {
-        res
-          .status(statusCode.OK)
-          .send(user);
-      }
+      res
+        .status(statusCode.OK)
+        .send(user);
     })
     .catch(next);
 };
@@ -91,14 +82,11 @@ const updateAvatar = (req, res, next) => {
       runValidators: true, // данные будут валидированы перед изменением
     },
   )
+    .orFail(new NotFoundError({ message: 'Пользователь не найден' }))
     .then((user) => {
-      if (!user) {
-        throw new NotFoundError({ message: 'Пользователь не найден' }); // формируем ошибку  мидлвару
-      } else {
-        res
-          .status(statusCode.OK)
-          .send(user);
-      }
+      res
+        .status(statusCode.OK)
+        .send(user);
     })
     .catch(next);
 };
@@ -110,28 +98,26 @@ const login = (req, res, next) => {
   //если почта и пароль совпадают, пользователь входит, иначе получает ошибку
   //select('+password') отменяем правило исключения в модели
   User.findOne({ email })
-    .select('+password')  // отменяем правило исключения в модели
+    .select('+password')
+    .orFail(new Unauthorized({ message: 'Неправильные почта или пароль' }))
     .then((user) => {
+      console.log(user);
       // сравниваем переданный пароль и хеш из базы
       bcrypt.compare(String(password), user.password)
-        .then((matched) => {
-          if (!matched) {
-            throw new Unauthorized({ message: 'Неправильные почта или пароль' }); // формируем ошибку  мидлвару
-          } else {
-            // аутентификация успешна
-            // создать JWT
-            const token = jwt.sign(
-              { _id: user._id },
-              process.env.JWT_SECRET,
-              { expiresIn: '7d' }); // токен будет просрочен через 7 дней
-            // прикрепить его к куке
-            res.cookie('jwt', token, {
-              maxAge: 604800, // время действия токена
-              httpOnly: true, // cookie доступны в рамках запроса http
-              sameSite: true, // позволяет отправлять куки только в рамках одного домена
-            });
-            res.send(user.toJSON());
-          }
+        .then((isUserValid) => {
+          // аутентификация успешна
+          // создать JWT
+          const token = jwt.sign(
+            { _id: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }); // токен будет просрочен через 7 дней
+          // прикрепить его к куке
+          res.cookie('jwt', token, {
+            maxAge: 604800, // время действия токена
+            httpOnly: true, // cookie доступны в рамках запроса http
+            sameSite: true, // позволяет отправлять куки только в рамках одного домена
+          });
+          res.send(user.toJSON());
         })
         .catch(next);
     })
@@ -140,14 +126,11 @@ const login = (req, res, next) => {
 
 const getUser = (req, res, next) => {
   User.findById(req.user._id)
+    .orFail(new NotFoundError({ message: 'Пользователь не найден' }))
     .then((user) => {
-      if (!user) {
-        throw new NotFoundError({ message: 'Пользователь не найден' }); // формируем ошибку  мидлвару
-      } else {
-        res
-          .status(statusCode.OK)
-          .send(user);
-      }
+      res
+        .status(statusCode.OK)
+        .send(user);
     })
     .catch(next);
 };

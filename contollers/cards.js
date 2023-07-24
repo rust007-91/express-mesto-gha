@@ -27,12 +27,9 @@ const getCards = (req, res, next) => {
 const deleteCard = (req, res, next) => {
   const { cardId } = req.params;
   Card.findByIdAndRemove(cardId)
+    .orFail(new NotFoundError({ message: 'Карточка с указанным _id не найдена.' }))
     .then((card) => {
-      if (!card) {
-        throw new NotFoundError({ message: 'Карточка с указанным _id не найдена.' }); // формируем ошибку  мидлвару
-      } else {
-        res.send(card);
-      }
+      res.send(card);
     })
     .catch(next);
 };
@@ -44,12 +41,9 @@ const likeCard = (req, res, next) => {
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
   )
+    .orFail(new NotFoundError({ message: 'Карточка с указанным _id не найдена.' }))
     .then((card) => {
-      if (!card) {
-        throw new NotFoundError({ message: 'Карточка с указанным _id не найдена.' }); // формируем ошибку  мидлвару
-      } else {
-        res.send({ card });
-      }
+      res.send({ card });
     })
     .catch(next);
 };
@@ -61,12 +55,9 @@ const dislikeCard = (req, res, next) => {
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
+    .orFail(new NotFoundError({ message: 'Карточка с указанным _id не найдена.' }))
     .then((like) => {
-      if (!like) {
-        throw new NotFoundError({ message: 'Карточка с указанным _id не найдена.' }); // формируем ошибку  мидлвару
-      } else {
-        res.send(like);
-      }
+      res.send(like);
     })
     .catch(next);
 };

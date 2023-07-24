@@ -20,7 +20,7 @@ app.use(helmet()); // защита от вэб уязвимостей
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-app.use('/users', userRouter);
+app.use('/', userRouter);
 
 app.use('/cards', cardRouter);
 
