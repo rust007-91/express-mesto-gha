@@ -1,5 +1,3 @@
-const statusCode = require('../utils/constants');
-
 class ConflictServerError extends Error {
   constructor(err) {
     super(err);

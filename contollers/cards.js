@@ -1,6 +1,7 @@
 const Card = require('../models/card');
 const statusCode = require('../utils/constants');
 const NotFoundError = require('../errors/NotFoundError');
+const Forbidden = require('../errors/Forbidden');
 
 // контроллер на запрос создания карточки
 const createCard = (req, res, next) => {
@@ -27,7 +28,7 @@ const getCards = (req, res, next) => {
 const deleteCard = (req, res, next) => {
   const { cardId } = req.params;
   Card.findByIdAndRemove(cardId)
-    .orFail(() => new NotFoundError({ message: 'Карточка с указанным _id не найдена.' }))
+    .orFail(() => new Forbidden({ message: 'Невозможно удалить чужую карточку' }))
     .then((card) => {
       res.send(card);
     })

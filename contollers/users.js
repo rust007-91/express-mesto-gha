@@ -4,6 +4,7 @@ const User = require('../models/user');
 const statusCode = require('../utils/constants');
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequestError = require('../errors/BadRequestError');
+const Unauthorized = require('../errors/Unauthorized');
 
 // контроллер на запрос создания пользователя
 const createUsers = (req, res, next) => {
@@ -91,13 +92,13 @@ const updateAvatar = (req, res, next) => {
 
 // контроллер на запрос аутентификации
 const login = (req, res, next) => {
-  //отправляем почту и пароль
+  // отправляем почту и пароль
   const { email, password } = req.body;
-  //если почта и пароль совпадают, пользователь входит, иначе получает ошибку
-  //select('+password') отменяем правило исключения в модели
+  // если почта и пароль совпадают, пользователь входит, иначе получает ошибку
+  // select('+password') отменяем правило исключения в модели
   User.findOne({ email })
     .select('+password')
-    .orFail(() => new BadRequestError({ message: 'Неправильные почта или пароль' }))
+    .orFail(() => new Unauthorized({ message: 'Неправильные почта или пароль' }))
     .then((user) => {
       // сравниваем переданный пароль и хеш из базы
       bcrypt.compare(String(password), user.password)

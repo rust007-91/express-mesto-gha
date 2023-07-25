@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema({
   { versionKey: false },
 );
 
-//метод скрытия пороля в возвращаемом объекте
+// метод скрытия пороля в возвращаемом объекте
 userSchema.methods.toJSON = function() {
   const user = this.toObject(); // приведение к объекту
   delete user.password;

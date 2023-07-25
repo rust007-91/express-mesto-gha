@@ -5,11 +5,10 @@ const NotFoundError = require('../errors/NotFoundError');
 const Unauthorized = require('../errors/Unauthorized');
 const ConflictServerError = require('../errors/ConflictServerError');
 const InternalServerError = require('../errors/InternalServerError');
+const Forbidden = require('../errors/Forbidden');
 
 const errorHandler = (err, req, res, next) => {
   let error;
-  console.log(err);
-  console.log(err.name);
 
   if (err.name === 'CastError' || err.name === 'ValidationError' || err.statusCode === statusCode.BAD_REQUEST) {
     error = new BadRequestError(err);
@@ -17,6 +16,8 @@ const errorHandler = (err, req, res, next) => {
     error = new Unauthorized(err);
   } else if (err.statusCode === statusCode.NOT_FOUND) {
     error = new NotFoundError(err);
+  } else if (err.statusCode === statusCode.FORBIDDEN) {
+    error = new Forbidden(err);
   } else if (err.code === 11000) {
     error = new ConflictServerError(err);
   } else {
