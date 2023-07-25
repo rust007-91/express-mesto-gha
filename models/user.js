@@ -2,6 +2,20 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 
 const userSchema = new mongoose.Schema({
+    email: {
+      type: String,
+      required: [true, 'Поле "email" должно быть заполнено'],
+      unique: true, // правило отклоняющее создание одинаковых пользователей
+      validate: {
+        validator: (email) => validator.isEmail(email),
+        message: 'Неправильные данные',
+      },
+    },
+    password: {
+      type: String,
+      required: [true, 'Поле "password" должно быть заполнено'],
+      select: false,
+    },
     name: {
       type: String,
       minlength: [2, 'Минимальная длина поля "name" - 2'],
@@ -24,21 +38,6 @@ const userSchema = new mongoose.Schema({
         message: 'Некорректный URL',
       },
       default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
-    },
-    email: {
-      type: String,
-      required: [true, 'Поле "email" должно быть заполнено'],
-      unique: true, // правило отклоняющее создание одинаковых пользователей
-      validate: {
-        validator: (email) => validator.isEmail(email),
-        message: 'Неправильные данные',
-      },
-    },
-    password: {
-      type: String,
-      required: [true, 'Поле "password" должно быть заполнено'],
-      minlength: 4,
-      select: false,
     },
   },
   { versionKey: false },

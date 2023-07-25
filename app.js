@@ -5,10 +5,8 @@ const helmet = require('helmet'); // защита от вэб уязвимост
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
-const userRouter = require('./routes/users');
-const cardRouter = require('./routes/cards');
 const errorHandler = require('./middlewares/error');
-
+const routes = require('./routes/routes');
 
 const { PORT = 3000, DB_URL = 'mongodb://localhost:27017/mestodb' } = process.env;
 
@@ -20,9 +18,7 @@ app.use(helmet()); // защита от вэб уязвимостей
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-app.use('/', userRouter);
-
-app.use('/cards', cardRouter);
+app.use(routes);
 
 app.use(errors());
 app.use(errorHandler); // мидлвара ошибок

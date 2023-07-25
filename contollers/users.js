@@ -3,16 +3,14 @@ const jwt = require('jsonwebtoken');  // импортируем модуль jso
 const User = require('../models/user');
 const statusCode = require('../utils/constants');
 const NotFoundError = require('../errors/NotFoundError');
-const Unauthorized = require('../errors/Unauthorized');
+const BadRequestError = require('../errors/BadRequestError');
 
 // контроллер на запрос создания пользователя
 const createUsers = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body;
-
   // хешируем пароль
   bcrypt.hash(String(password), 10)
-    .then(hash => {
-      // записываем хеш пароль в базу
+    .then((hash) => {
       User.create({ name, about, avatar, email, password: hash })
         .then((user) => {
           res
@@ -27,7 +25,7 @@ const createUsers = (req, res, next) => {
 // контроллер на запрос возвращения пользователей
 const getUsers = (req, res, next) => {
   User.find({})
-    .orFail(new NotFoundError({ message: 'Пользователь не найден' })) // формируем ошибку
+    .orFail(() => new NotFoundError({ message: 'Пользователь не найден' })) // формируем ошибку
     .then((users) => {
       res
         .status(statusCode.OK)
@@ -40,7 +38,7 @@ const getUsers = (req, res, next) => {
 const getUserId = (req, res, next) => {
   const { userId } = req.params;
   User.findById(userId)
-    .orFail(new NotFoundError({ message: 'Пользователь не найден' }))
+    .orFail(() => new NotFoundError({ message: 'Пользователь не найден' }))
     .then((user) => {
       res
         .status(statusCode.OK)
@@ -61,7 +59,7 @@ const updateUser = (req, res, next) => {
       upsert: true, // если пользователь не найден, он будет создан
     },
   )
-    .orFail(new NotFoundError({ message: 'Пользователь не найден' }))
+    .orFail(() => new BadRequestError({ message: 'Переданы некорректные данные' }))
     .then((user) => {
       res
         .status(statusCode.OK)
@@ -82,7 +80,7 @@ const updateAvatar = (req, res, next) => {
       runValidators: true, // данные будут валидированы перед изменением
     },
   )
-    .orFail(new NotFoundError({ message: 'Пользователь не найден' }))
+    .orFail(() => new NotFoundError({ message: 'Пользователь не найден' }))
     .then((user) => {
       res
         .status(statusCode.OK)
@@ -99,12 +97,11 @@ const login = (req, res, next) => {
   //select('+password') отменяем правило исключения в модели
   User.findOne({ email })
     .select('+password')
-    .orFail(new Unauthorized({ message: 'Неправильные почта или пароль' }))
+    .orFail(() => new BadRequestError({ message: 'Неправильные почта или пароль' }))
     .then((user) => {
-      console.log(user);
       // сравниваем переданный пароль и хеш из базы
       bcrypt.compare(String(password), user.password)
-        .then((isUserValid) => {
+        .then(() => {
           // аутентификация успешна
           // создать JWT
           const token = jwt.sign(
@@ -126,7 +123,7 @@ const login = (req, res, next) => {
 
 const getUser = (req, res, next) => {
   User.findById(req.user._id)
-    .orFail(new NotFoundError({ message: 'Пользователь не найден' }))
+    .orFail(() => new NotFoundError({ message: 'Пользователь не найден' }))
     .then((user) => {
       res
         .status(statusCode.OK)
