@@ -105,7 +105,7 @@ const login = (req, res, next) => {
   // select('+password') отменяем правило исключения в модели
   User.findOne({ email })
     .select('+password')
-    .orFail(() => new BadRequestError({ message: 'Переданы некорректные данные' }))
+    .orFail(() => new Unauthorized({ message: 'Неправильные почта или пароль' }))
     .then((user) => {
       // сравниваем переданный пароль и хеш из базы
       bcrypt.compare(String(password), user.password)
