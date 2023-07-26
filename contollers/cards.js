@@ -33,12 +33,12 @@ const deleteCard = (req, res, next) => {
     .then((card) => {
       if (card.owner.toString() !== req.user._id) {
         new Forbidden({ message: 'Невозможно удалить чужую карточку' });
-      } else {
-        Card.findByIdDelete(card)
-          .then((card) => {
-            res.send(card);
-          });
+        return;
       }
+      Card.findByIdAndDelete(cardId)
+        .then((card) => {
+          res.send(card);
+        });
     })
     .catch(next);
 };

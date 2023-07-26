@@ -9,8 +9,12 @@ const Unauthorized = require('../errors/Unauthorized');
 // контроллер на запрос создания пользователя
 const createUsers = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body;
+  if (!email || !password) {
+    throw new NotFoundError({ message: 'email или пароль не могут быть пустыми' });
+    return;
+  }
 
-  bcrypt.hash(String(password), 10) // хешируем пароль
+  bcrypt.hash(String(password), 10)
     .then((hash) => User.create({ name, about, avatar, email, password: hash }))
     .then((user) => {
       res
@@ -91,6 +95,12 @@ const updateAvatar = (req, res, next) => {
 const login = (req, res, next) => {
   // отправляем почту и пароль
   const { email, password } = req.body;
+
+  if (!email || !password) {
+    throw new NotFoundError({ message: 'email или пароль не могут быть пустыми' });
+    return;
+  }
+
   // если почта и пароль совпадают, пользователь входит, иначе получает ошибку
   // select('+password') отменяем правило исключения в модели
   User.findOne({ email })
@@ -99,20 +109,24 @@ const login = (req, res, next) => {
     .then((user) => {
       // сравниваем переданный пароль и хеш из базы
       bcrypt.compare(String(password), user.password)
-        .then(() => {
-          // аутентификация успешна
-          // создать JWT
-          const token = jwt.sign(
-            { _id: user._id },
-            process.env.JWT_SECRET,
-            { expiresIn: '7d' }); // токен будет просрочен через 7 дней
-          // прикрепить его к куке
-          res.cookie('jwt', token, {
-            maxAge: 604800, // время действия токена
-            httpOnly: true, // cookie доступны в рамках запроса http
-            sameSite: true, // позволяет отправлять куки только в рамках одного домена
-          });
-          res.send(user.toJSON());
+        .then((matched) => {
+          if (matched) {
+            // создать JWT
+            const token = jwt.sign(
+              { _id: user._id },
+              process.env.JWT_SECRET,
+              { expiresIn: '7d' }); // токен будет просрочен через 7 дней
+
+            // прикрепить его к куке
+            res.cookie('jwt', token, {
+              maxAge: 604800, // время действия токена
+              httpOnly: true, // cookie доступны в рамках запроса http
+              sameSite: true, // позволяет отправлять куки только в рамках одного домена
+            });
+            res.send(user.toJSON());
+          } else {
+            throw new Unauthorized({ message: 'Неправильные почта или пароль' });
+          }
         })
         .catch(next);
     })
