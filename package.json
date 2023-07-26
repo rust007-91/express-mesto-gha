@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon app.js",
     "start": "node app.js",
-    "lint": "npx eslint"
+    "lint": "npx eslint."
   },
   "keywords": [],
   "author": "Ruslan Rotkin",
@@ -24,7 +24,6 @@
     "validator": "^13.9.0"
   },
   "devDependencies": {
-    "depcheck": "^1.4.3",
     "eslint": "^8.43.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.8.0",
