@@ -13,14 +13,11 @@ const createUsers = (req, res, next) => {
   if (!email || !password) return res.status(400).send({ message: 'email или пароль не могут быть пустыми' });
 
   bcrypt.hash(String(password), 10) // хешируем пароль
-    .then((hash) => {
-      return User.create({ name, about, avatar, email, password: hash })
-        .then((user) => {
-          res
-            .status(statusCode.CREATED)
-            .send(user);
-        })
-        .catch(next);
+    .then((hash) => User.create({ name, about, avatar, email, password: hash }))
+    .then((user) => {
+      res
+        .status(statusCode.CREATED)
+        .send(user);
     })
     .catch(next);
 };
@@ -96,13 +93,12 @@ const updateAvatar = (req, res, next) => {
 const login = (req, res, next) => {
   // отправляем почту и пароль
   const { email, password } = req.body;
-
   if (!email || !password) return res.status(400).send({ message: 'email или пароль не могут быть пустыми' });
   // если почта и пароль совпадают, пользователь входит, иначе получает ошибку
   // select('+password') отменяем правило исключения в модели
   User.findOne({ email })
     .select('+password')
-    .orFail(() => new BadRequestError({ message: 'Переданы некорректные данные' }))
+    .orFail(() => new Unauthorized({ message: 'Неправильные почта или пароль' }))
     .then((user) => {
       // сравниваем переданный пароль и хеш из базы
       bcrypt.compare(String(password), user.password)
