@@ -9,7 +9,6 @@ const Forbidden = require('../errors/Forbidden');
 
 const errorHandler = (err, req, res, next) => {
   let error;
-  console.log(err);
 
   if (err.name === 'CastError' || err.name === 'ValidationError' || err.statusCode === statusCode.BAD_REQUEST) {
     error = new BadRequestError(err);

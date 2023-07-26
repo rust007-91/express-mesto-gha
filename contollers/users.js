@@ -9,8 +9,10 @@ const Unauthorized = require('../errors/Unauthorized');
 // контроллер на запрос создания пользователя
 const createUsers = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body;
-  // хешируем пароль
-  bcrypt.hash(String(password), 10)
+
+  if (!email || !password) return res.status(400).send({ message: 'email или пароль не могут быть пустыми' });
+
+  bcrypt.hash(String(password), 10) // хешируем пароль
     .then((hash) => {
       User.create({ name, about, avatar, email, password: hash })
         .then((user) => {
