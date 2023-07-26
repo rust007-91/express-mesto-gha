@@ -2,15 +2,15 @@ const { celebrate, Joi } = require('celebrate');
 
 const regexAvatar = /https?:\/\/(www\.)?[a-zA-Z\d-]+\.[\w\d\-.~:/?#[\]@!$&'()*+,;=]{2,}#?/;
 
-const authValidate = celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().required(),
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().pattern(regexAvatar),
-  }),
-});
+// const authValidate = celebrate({
+//   body: Joi.object().keys({
+//     email: Joi.string().required().email(),
+//     password: Joi.string().required(),
+//     name: Joi.string().min(2).max(30),
+//     about: Joi.string().min(2).max(30),
+//     avatar: Joi.string().pattern(regexAvatar),
+//   }),
+// });
 
 const loginValidate = celebrate({
   body: Joi.object().keys({
@@ -46,7 +46,6 @@ const createCardValidate = celebrate({
 });
 
 module.exports = {
-  authValidate,
   loginValidate,
   idValidate,
   userUpdateValidate,
