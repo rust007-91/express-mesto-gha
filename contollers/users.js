@@ -10,7 +10,7 @@ const Unauthorized = require('../errors/Unauthorized');
 const createUsers = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body;
   if (!email || !password) {
-    throw new NotFoundError({ message: 'email или пароль не могут быть пустыми' });
+    throw new BadRequestError({ message: 'email или пароль не могут быть пустыми' });
     return;
   }
 
@@ -52,6 +52,7 @@ const getUserId = (req, res, next) => {
 const updateUser = (req, res, next) => {
   const { name, about } = req.body;
   const id = req.user._id;
+
   User.findByIdAndUpdate(
     id,
     { name, about },
@@ -97,7 +98,7 @@ const login = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    throw new NotFoundError({ message: 'email или пароль не могут быть пустыми' });
+    throw new BadRequestError({ message: 'email или пароль не могут быть пустыми' });
     return;
   }
 
@@ -105,7 +106,7 @@ const login = (req, res, next) => {
   // select('+password') отменяем правило исключения в модели
   User.findOne({ email })
     .select('+password')
-    .orFail(() => new Unauthorized({ message: 'Неправильные почта или пароль' }))
+    .orFail(() => new BadRequestError({ message: 'Переданы некорректные данные' }))
     .then((user) => {
       // сравниваем переданный пароль и хеш из базы
       bcrypt.compare(String(password), user.password)
@@ -123,7 +124,9 @@ const login = (req, res, next) => {
               httpOnly: true, // cookie доступны в рамках запроса http
               sameSite: true, // позволяет отправлять куки только в рамках одного домена
             });
-            res.send(user.toJSON());
+            res
+              .status(statusCode.OK)
+              .send(user.toJSON());
           } else {
             throw new Unauthorized({ message: 'Неправильные почта или пароль' });
           }
