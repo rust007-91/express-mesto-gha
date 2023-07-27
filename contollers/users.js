@@ -6,22 +6,27 @@ const NotFoundError = require('../errors/NotFoundError');
 const BadRequestError = require('../errors/BadRequestError');
 const Unauthorized = require('../errors/Unauthorized');
 
+
+//P.S. Я уже опнятия не имею, что делать с этими ошибками, поправил вроде по ревью и работает,
+// но ошибок стало ещё больше. Статусы уже не сколько раз менял для тестов,
+// ставишь 401, просит 400, ставишь 400 просит 401
+
 // контроллер на запрос создания пользователя
 const createUsers = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body;
+
   if (!email || !password) {
     throw new BadRequestError({ message: 'email или пароль не могут быть пустыми' });
-    return;
+  } else {
+    bcrypt.hash(String(password), 10)
+      .then((hash) => User.create({ name, about, avatar, email, password: hash }))
+      .then((user) => {
+        res
+          .status(statusCode.CREATED)
+          .send(user);
+      })
+      .catch(next);
   }
-
-  bcrypt.hash(String(password), 10)
-    .then((hash) => User.create({ name, about, avatar, email, password: hash }))
-    .then((user) => {
-      res
-        .status(statusCode.CREATED)
-        .send(user);
-    })
-    .catch(next);
 };
 
 // контроллер на запрос возвращения пользователей
@@ -99,41 +104,40 @@ const login = (req, res, next) => {
 
   if (!email || !password) {
     throw new BadRequestError({ message: 'email или пароль не могут быть пустыми' });
-    return;
+  } else {
+    // если почта и пароль совпадают, пользователь входит, иначе получает ошибку
+    // select('+password') отменяем правило исключения в модели
+    User.findOne({ email })
+      .select('+password')
+      .orFail(() => new BadRequestError({ message: 'Переданы некорректные данные' }))
+      .then((user) => {
+        // сравниваем переданный пароль и хеш из базы
+        bcrypt.compare(String(password), user.password)
+          .then((matched) => {
+            if (matched) {
+              // создать JWT
+              const token = jwt.sign(
+                { _id: user._id },
+                process.env.JWT_SECRET,
+                { expiresIn: '7d' }); // токен будет просрочен через 7 дней
+
+              // прикрепить его к куке
+              res.cookie('jwt', token, {
+                maxAge: 604800, // время действия токена
+                httpOnly: true, // cookie доступны в рамках запроса http
+                sameSite: true, // позволяет отправлять куки только в рамках одного домена
+              });
+              res
+                .status(statusCode.OK)
+                .send(user.toJSON());
+            } else {
+              throw new Unauthorized({ message: 'Неправильные почта или пароль' });
+            }
+          })
+          .catch(next);
+      })
+      .catch(next);
   }
-
-  // если почта и пароль совпадают, пользователь входит, иначе получает ошибку
-  // select('+password') отменяем правило исключения в модели
-  User.findOne({ email })
-    .select('+password')
-    .orFail(() => new BadRequestError({ message: 'Переданы некорректные данные' }))
-    .then((user) => {
-      // сравниваем переданный пароль и хеш из базы
-      bcrypt.compare(String(password), user.password)
-        .then((matched) => {
-          if (matched) {
-            // создать JWT
-            const token = jwt.sign(
-              { _id: user._id },
-              process.env.JWT_SECRET,
-              { expiresIn: '7d' }); // токен будет просрочен через 7 дней
-
-            // прикрепить его к куке
-            res.cookie('jwt', token, {
-              maxAge: 604800, // время действия токена
-              httpOnly: true, // cookie доступны в рамках запроса http
-              sameSite: true, // позволяет отправлять куки только в рамках одного домена
-            });
-            res
-              .status(statusCode.OK)
-              .send(user.toJSON());
-          } else {
-            throw new Unauthorized({ message: 'Неправильные почта или пароль' });
-          }
-        })
-        .catch(next);
-    })
-    .catch(next);
 };
 
 const getUser = (req, res, next) => {
