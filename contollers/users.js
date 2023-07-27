@@ -6,11 +6,6 @@ const NotFoundError = require('../errors/NotFoundError');
 const BadRequestError = require('../errors/BadRequestError');
 const Unauthorized = require('../errors/Unauthorized');
 
-
-//P.S. Я уже опнятия не имею, что делать с этими ошибками, поправил вроде по ревью и работает,
-// но ошибок стало ещё больше. Статусы уже не сколько раз менял для тестов,
-// ставишь 401, просит 400, ставишь 400 просит 401
-
 // контроллер на запрос создания пользователя
 const createUsers = (req, res, next) => {
   const { name, about, avatar, email, password } = req.body;
